@@ -1,0 +1,16 @@
+use strict;
+use inc::Module::Install;
+name 'Module-CoreList-DBSchema';
+author 'Chris Williams';
+version_from 'lib/Module/CoreList/DBSchema.pm';
+abstract_from 'lib/Module/CoreList/DBSchema.pm';
+readme_from 'lib/Module/CoreList/DBSchema.pm';
+license 'perl';
+perl_version '5.006';
+build_requires 'Test::More' => 0.47;
+requires 'Module::CoreList' => '2.29';
+requires 'SQL::Abstract' => '1.65';
+auto_license;
+githubmeta;
+auto_provides;
+WriteAll();
