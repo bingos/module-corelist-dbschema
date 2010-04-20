@@ -1,3 +1,4 @@
+Changes
 examples/synopsis.pl
 inc/Module/Install.pm
 inc/Module/Install/AutoLicense.pm
@@ -22,3 +23,4 @@ t/02_tables.t
 t/03_data.t
 t/99_pod.t
 t/99_pod_coverage.t
+tools/git-log.pl

@@ -14,4 +14,5 @@ requires 'SQL::Abstract' => '1.65';
 auto_license;
 githubmeta;
 auto_provides;
+makemaker_args(dist => { PREOP => "$^X ./tools/git-log.pl > ./Changes" });
 WriteAll();
