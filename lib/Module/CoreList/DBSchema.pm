@@ -2,6 +2,7 @@ package Module::CoreList::DBSchema;
 
 use strict;
 use warnings;
+use Clone qw[clone];
 use Module::CoreList;
 use SQL::Abstract;
 use vars qw[$VERSION];
@@ -44,7 +45,9 @@ sub new {
 }
 
 sub tables {
-  return %{ $tables };
+  my $clone = clone( $tables );
+  return %{ $clone } if wantarray;
+  return $clone;
 }
 
 sub data {
@@ -76,9 +79,139 @@ sub data {
       $sql->insert( 'cl_bugtracker', [ $mod, ( $Module::CoreList::bug_tracker{ $mod } || '' ) ] )
     ];
   }
+  return @{ $data } if wantarray;
   return $data;
 }
 
 q[Modules are our business];
 
 __END__
+
+=head1 NAME
+
+Module::CoreList::DBSchema - A database schema for Module::CoreList
+
+=head1 SYNOPSIS
+
+  # this requires DBI and DBD::SQLite which are available from CPAN
+
+  use strict;
+  use warnings;
+  use DBI;
+  use Module::CoreList::DBSchema;
+  
+  $|=1;
+  
+  my $dbh = DBI->connect('dbi:SQLite:dbname=corelist.db','','') or die $DBI::errstr;
+  $dbh->do(qq{PRAGMA synchronous = OFF}) or die $dbh->errstr;
+  
+  my $mcdbs = Module::CoreList::DBSchema->new();
+  
+  # create tables
+  
+  my %tables = $mcdbs->tables();
+  
+  print "Creating tables ... ";
+  
+  foreach my $table ( keys %tables ) {
+    my $sql = 'CREATE TABLE IF NOT EXISTS ' . $table . ' ( ';
+    $sql .= join ', ', @{ $tables{$table} };
+    $sql .= ' )';
+    $dbh->do($sql) or die $dbh->errstr;
+    $dbh->do('DELETE FROM ' . $table) or die $dbh->errstr;
+  }
+  
+  print "DONE\n";
+  
+  # populate with data
+  
+  my @data = $mcdbs->data();
+  
+  print "Populating tables ... ";
+  
+  $dbh->begin_work;
+  
+  foreach my $row ( @data ) {
+    my $sql = shift @{ $row };
+    my $sth = $dbh->prepare_cached($sql) or die $dbh->errstr;
+    $sth->execute( @{ $row } ) or die $dbh->errstr;
+  }
+  
+  $dbh->commit;
+  
+  print "DONE\n";
+  
+  # done
+
+=head1 DESCRIPTION
+
+Module::CoreList::DBSchema provides methods for building a database from the 
+information that is provided by L<Module::CoreList>.
+
+=head1 CONSTRUCTOR
+
+=over
+
+=item C<new>
+
+Creates a new Module::CoreList::DBSchema object.
+
+  my $mcdbs = Module::CoreList::DBSchema->new();
+
+=back
+
+=head1 METHODS
+
+=over
+
+=item C<tables>
+
+In a scalar context returns a hashref data structure keyed on table name.
+
+In a list context returns a list of the same data structure.
+
+  my %tables = $mcdbs->tables();
+  
+  foreach my $table ( keys %tables ) {
+    my $sql = 'CREATE TABLE IF NOT EXISTS ' . $table . ' ( ';
+    $sql .= join ', ', @{ $tables{$table} };
+    $sql .= ' )';
+    $dbh->do($sql) or die $dbh->errstr;
+    $dbh->do('DELETE FROM ' . $table) or die $dbh->errstr;
+  }
+  
+=item C<data>
+
+In a list context returns a list of arrayrefs which contain a SQL statement
+as the first element and the remaining elements being bind values for the SQL
+statement.
+
+In a scalar context returns an arrayref which contains the above arrayrefs.
+
+  my @data = $mcdbs->data();
+  
+  foreach my $row ( @data ) {
+    my $sql = shift @{ $row };
+    my $sth = $dbh->prepare_cached($sql) or die $dbh->errstr;
+    $sth->execute( @{ $row } ) or die $dbh->errstr;
+  }
+  
+=back
+
+=head1 AUTHOR
+
+Chris C<BinGOs> Williams <chris@bingosnet.co.uk>
+
+=head1 LICENSE
+
+Copyright E<copy> Chris Williams
+
+This module may be used, modified, and distributed under the same terms as Perl itself. Please see the license that came with your Perl distribution for details.
+
+=head1 SEE ALSO
+
+L<Module::CoreList>
+
+L<DBI>
+
+=cut

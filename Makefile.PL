@@ -8,6 +8,7 @@ readme_from 'lib/Module/CoreList/DBSchema.pm';
 license 'perl';
 perl_version '5.006';
 build_requires 'Test::More' => 0.47;
+requires 'Clone' => '0.31';
 requires 'Module::CoreList' => '2.29';
 requires 'SQL::Abstract' => '1.65';
 auto_license;
