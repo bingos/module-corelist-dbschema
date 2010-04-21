@@ -95,6 +95,22 @@ METHODS
             $sth->execute( @{ $row } ) or die $dbh->errstr;
           }
 
+    "queries"
+        Returns a list of the available SQL queries.
+
+          my @queries = $mcdbs->queries();
+
+    "query"
+        Takes one argument, the name of a query to lookup.
+
+        Returns in list context a list consisting of a SQL string and a flag
+        indicating whether the SQL string includes placeholders.
+
+        In scalar context returns an array reference containing the same as
+        above.
+
+          my $sql = $mcdbs->query('corelist');
+
 AUTHOR
     Chris "BinGOs" Williams <chris@bingosnet.co.uk>
 

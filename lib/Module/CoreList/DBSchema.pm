@@ -7,7 +7,7 @@ use Module::CoreList;
 use SQL::Abstract;
 use vars qw[$VERSION];
 
-$VERSION = '0.02';
+$VERSION = '0.04';
 
 my $tables = {
    cl_perls => [
@@ -32,6 +32,10 @@ my $tables = {
       'mod_name VARCHAR(300) NOT NULL',
       'url TEXT',
     ],
+};
+
+my $queries = {
+  corelist => [ 'select cl_perls.perl_ver, mod_vers, released, deprecated from cl_versions,cl_perls where cl_perls.perl_ver = cl_versions.perl_ver and mod_name = ? order by cl_versions.perl_ver', 1 ],
 };
 
 my $sql = SQL::Abstract->new();
@@ -81,6 +85,19 @@ sub data {
   }
   return @{ $data } if wantarray;
   return $data;
+}
+
+sub queries {
+  return keys %{ $queries };
+}
+
+sub query {
+  my $self = shift;
+  my $query = shift || return;
+  return unless exists $queries->{ $query };
+  my $sql = $queries->{ $query };
+  return @{ $sql } if wantarray;
+  return $sql;
 }
 
 q[Modules are our business];
@@ -196,6 +213,23 @@ In a scalar context returns an arrayref which contains the above arrayrefs.
     $sth->execute( @{ $row } ) or die $dbh->errstr;
   }
   
+=item C<queries>
+
+Returns a list of the available SQL queries.
+
+  my @queries = $mcdbs->queries();
+
+=item C<query>
+
+Takes one argument, the name of a query to lookup.
+
+Returns in list context a list consisting of a SQL string and a flag indicating whether the
+SQL string includes placeholders.
+
+In scalar context returns an array reference containing the same as above.
+
+  my $sql = $mcdbs->query('corelist');
+
 =back
 
 =head1 AUTHOR
