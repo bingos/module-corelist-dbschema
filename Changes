@@ -1,3 +1,14 @@
+==============================
+2010-04-21 11:57:21 +0100 0.04
+==============================
+
+  commit e67cd3af53d9e73ef2cbfdf96c1d4659b9eee53b
+  Author: Chris Williams <chris@bingosnet.co.uk>
+  Date:   Wed Apr 21 11:57:21 2010 +0100
+  
+    Added query related methods and a query for retrieving corelist
+    information for a module 
+
 ==============
 End of Excerpt
 ==============

@@ -95,6 +95,10 @@ METHODS
             $sth->execute( @{ $row } ) or die $dbh->errstr;
           }
 
+        You may provide some optional arguments:
+
+          prefix, a string to prefix to the table names in the resultant SQL;
+
     "queries"
         Returns a list of the available SQL queries.
 

@@ -7,7 +7,7 @@ use Module::CoreList;
 use SQL::Abstract;
 use vars qw[$VERSION];
 
-$VERSION = '0.04';
+$VERSION = '0.06';
 
 my $tables = {
    cl_perls => [
@@ -56,31 +56,34 @@ sub tables {
 
 sub data {
   my $self = shift;
+  my %opts = @_;
+  $opts{lc $_} = delete $opts{$_} for keys %opts;
+  my $prefix = $opts{prefix} || '';
   my $data = [];
   foreach my $perl ( keys %Module::CoreList::version ) {
-    push @{ $data }, [ $sql->insert( 'cl_perls', [ $perl, $Module::CoreList::released{$perl} ] ) ];
+    push @{ $data }, [ $sql->insert( $prefix . 'cl_perls', [ $perl, $Module::CoreList::released{$perl} ] ) ];
     foreach my $mod ( keys %{ $Module::CoreList::version{ $perl } } ) {
       my $modver = $Module::CoreList::version{ $perl }{ $mod };
       $modver = '' unless $modver;
       my $deprecated = $Module::CoreList::deprecated{ $perl }{ $mod } || 0;
       push @{ $data }, [
-        $sql->insert( 'cl_versions', [ $perl, $mod, $modver, $deprecated ] )
+        $sql->insert( $prefix . 'cl_versions', [ $perl, $mod, $modver, $deprecated ] )
       ];
     }
   }
   foreach my $family ( keys %Module::CoreList::families ) {
     push @{ $data }, [
-      $sql->insert( 'cl_families', [ $_, $family ] )
+      $sql->insert( $prefix . 'cl_families', [ $_, $family ] )
     ] for @{ $Module::CoreList::families{ $family } };
   }
   foreach my $mod ( keys %Module::CoreList::upstream ) {
     push @{ $data }, [
-      $sql->insert( 'cl_upstream', [ $mod, ( $Module::CoreList::upstream{ $mod } || '' ) ] )
+      $sql->insert( $prefix . 'cl_upstream', [ $mod, ( $Module::CoreList::upstream{ $mod } || '' ) ] )
     ];
   }
   foreach my $mod ( keys %Module::CoreList::bug_tracker ) {
     push @{ $data }, [
-      $sql->insert( 'cl_bugtracker', [ $mod, ( $Module::CoreList::bug_tracker{ $mod } || '' ) ] )
+      $sql->insert( $prefix . 'cl_bugtracker', [ $mod, ( $Module::CoreList::bug_tracker{ $mod } || '' ) ] )
     ];
   }
   return @{ $data } if wantarray;
@@ -212,6 +215,10 @@ In a scalar context returns an arrayref which contains the above arrayrefs.
     my $sth = $dbh->prepare_cached($sql) or die $dbh->errstr;
     $sth->execute( @{ $row } ) or die $dbh->errstr;
   }
+
+You may provide some optional arguments:
+
+  prefix, a string to prefix to the table names in the resultant SQL;
   
 =item C<queries>
 
