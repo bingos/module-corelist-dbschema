@@ -1,13 +1,12 @@
 package Module::CoreList::DBSchema;
 
+#ABSTRACT: A database schema for Module::CoreList
+
 use strict;
 use warnings;
 use Clone qw[clone];
 use Module::CoreList;
 use SQL::Abstract;
-use vars qw[$VERSION];
-
-$VERSION = '0.06';
 
 my $tables = {
    cl_perls => [
@@ -105,11 +104,7 @@ sub query {
 
 q[Modules are our business];
 
-__END__
-
-=head1 NAME
-
-Module::CoreList::DBSchema - A database schema for Module::CoreList
+=pod
 
 =head1 SYNOPSIS
 
@@ -119,20 +114,20 @@ Module::CoreList::DBSchema - A database schema for Module::CoreList
   use warnings;
   use DBI;
   use Module::CoreList::DBSchema;
-  
+
   $|=1;
-  
+
   my $dbh = DBI->connect('dbi:SQLite:dbname=corelist.db','','') or die $DBI::errstr;
   $dbh->do(qq{PRAGMA synchronous = OFF}) or die $dbh->errstr;
-  
+
   my $mcdbs = Module::CoreList::DBSchema->new();
-  
+
   # create tables
-  
+
   my %tables = $mcdbs->tables();
-  
+
   print "Creating tables ... ";
-  
+
   foreach my $table ( keys %tables ) {
     my $sql = 'CREATE TABLE IF NOT EXISTS ' . $table . ' ( ';
     $sql .= join ', ', @{ $tables{$table} };
@@ -140,32 +135,32 @@ Module::CoreList::DBSchema - A database schema for Module::CoreList
     $dbh->do($sql) or die $dbh->errstr;
     $dbh->do('DELETE FROM ' . $table) or die $dbh->errstr;
   }
-  
+
   print "DONE\n";
-  
+
   # populate with data
-  
+
   my @data = $mcdbs->data();
-  
+
   print "Populating tables ... ";
-  
+
   $dbh->begin_work;
-  
+
   foreach my $row ( @data ) {
     my $sql = shift @{ $row };
     my $sth = $dbh->prepare_cached($sql) or die $dbh->errstr;
     $sth->execute( @{ $row } ) or die $dbh->errstr;
   }
-  
+
   $dbh->commit;
-  
+
   print "DONE\n";
-  
+
   # done
 
 =head1 DESCRIPTION
 
-Module::CoreList::DBSchema provides methods for building a database from the 
+Module::CoreList::DBSchema provides methods for building a database from the
 information that is provided by L<Module::CoreList>.
 
 =head1 CONSTRUCTOR
@@ -191,7 +186,7 @@ In a scalar context returns a hashref data structure keyed on table name.
 In a list context returns a list of the same data structure.
 
   my %tables = $mcdbs->tables();
-  
+
   foreach my $table ( keys %tables ) {
     my $sql = 'CREATE TABLE IF NOT EXISTS ' . $table . ' ( ';
     $sql .= join ', ', @{ $tables{$table} };
@@ -199,7 +194,7 @@ In a list context returns a list of the same data structure.
     $dbh->do($sql) or die $dbh->errstr;
     $dbh->do('DELETE FROM ' . $table) or die $dbh->errstr;
   }
-  
+
 =item C<data>
 
 In a list context returns a list of arrayrefs which contain a SQL statement
@@ -209,7 +204,7 @@ statement.
 In a scalar context returns an arrayref which contains the above arrayrefs.
 
   my @data = $mcdbs->data();
-  
+
   foreach my $row ( @data ) {
     my $sql = shift @{ $row };
     my $sth = $dbh->prepare_cached($sql) or die $dbh->errstr;
@@ -219,7 +214,7 @@ In a scalar context returns an arrayref which contains the above arrayrefs.
 You may provide some optional arguments:
 
   prefix, a string to prefix to the table names in the resultant SQL;
-  
+
 =item C<queries>
 
 Returns a list of the available SQL queries.
@@ -238,16 +233,6 @@ In scalar context returns an array reference containing the same as above.
   my $sql = $mcdbs->query('corelist');
 
 =back
-
-=head1 AUTHOR
-
-Chris C<BinGOs> Williams <chris@bingosnet.co.uk>
-
-=head1 LICENSE
-
-Copyright E<copy> Chris Williams
-
-This module may be used, modified, and distributed under the same terms as Perl itself. Please see the license that came with your Perl distribution for details.
 
 =head1 SEE ALSO
 
